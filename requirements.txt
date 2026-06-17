@@ -1,0 +1,16 @@
+# OCR runtime dependency manifest. Also used as the pip cache key by
+# actions/setup-python (`cache: pip`).
+#
+# NOTE: this file is a manifest/cache anchor only — it is NOT `pip install`-ed.
+# The workflow installs torch/torchvision from the CPU wheel index and mmcv via
+# `mim install` in its "Install Python build dependencies" step.
+torch
+torchvision
+openmim
+pyinstaller
+pillow
+numpy
+opencv-python-headless
+mmengine==0.10.7
+mmdet==3.1.0
+mmocr==1.0.1

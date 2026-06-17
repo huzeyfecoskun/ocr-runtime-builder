@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+.venv*/
+*.egg-info/
+
+# PyInstaller intermediates (regenerated on every build; never committed)
+build/
+dist/
+*.spec
+
+# Downloaded model + built runtime (CI artifacts, not source)
+resources/ocr-runtime/
+resources/ocr-models/*.pth
+
+# OS / editor
+.DS_Store
