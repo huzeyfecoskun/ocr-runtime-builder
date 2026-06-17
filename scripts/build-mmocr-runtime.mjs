@@ -45,6 +45,11 @@ rmSync(pyInstallerRoot, { recursive: true, force: true });
 mkdirSync(pyInstallerRoot, { recursive: true });
 
 run(python, [
+  "-c",
+  "import mmcv, mmengine, mmdet, mmocr; print('OCR build imports OK:', mmcv.__version__, mmengine.__version__, mmdet.__version__, mmocr.__version__)",
+]);
+
+run(python, [
   "-m",
   "PyInstaller",
   "--onefile",
@@ -62,6 +67,14 @@ run(python, [
   "--collect-all",
   "mmengine",
   "--collect-all",
+  "mmcv",
+  "--collect-submodules",
+  "mmcv",
+  "--collect-data",
+  "mmcv",
+  "--collect-binaries",
+  "mmcv",
+  "--hidden-import",
   "mmcv",
   "--collect-all",
   "mmdet",

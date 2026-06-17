@@ -55,11 +55,41 @@ jobs:
           if (!(Test-Path "resources/ocr-runtime/win32-x64/mmocr-svtr-worker.exe")) {
             throw "Missing resources/ocr-runtime/win32-x64/mmocr-svtr-worker.exe"
           }
-          Get-ChildItem -Recurse resources/ocr-runtime
+          Get-ChildItem -Recurse resources/ocr-runtime,resources/ocr-models
+
+      - name: Smoke test Windows runtime
+        shell: pwsh
+        run: |
+          $process = New-Object System.Diagnostics.Process
+          $process.StartInfo.FileName = "$PWD\resources\ocr-runtime\win32-x64\mmocr-svtr-worker.exe"
+          $process.StartInfo.RedirectStandardInput = $true
+          $process.StartInfo.RedirectStandardOutput = $true
+          $process.StartInfo.RedirectStandardError = $true
+          $process.StartInfo.UseShellExecute = $false
+          $process.StartInfo.EnvironmentVariables["NINES_SVTR_WEIGHTS"] = "$PWD\resources\ocr-models\svtr-small_20e_st_mj-35d800d6.pth"
+          [void]$process.Start()
+          $readyLine = $process.StandardOutput.ReadLineAsync()
+          if (!$readyLine.Wait(120000)) {
+            $process.Kill()
+            throw "Runtime did not become ready within 120 seconds. stderr: $($process.StandardError.ReadToEnd())"
+          }
+          $line = $readyLine.Result
+          if (!$process.HasExited) {
+            $process.Kill()
+          }
+          if ($line -match '"type"\s*:\s*"ready"') {
+            Write-Host "Runtime loaded successfully."
+          } elseif ($process.HasExited -and $process.ExitCode -ne 0) {
+            throw "Runtime exited early with code $($process.ExitCode). stdout: $($process.StandardOutput.ReadToEnd()) stderr: $($process.StandardError.ReadToEnd())"
+          } else {
+            throw "Runtime emitted unexpected stdout: $line stderr: $($process.StandardError.ReadToEnd())"
+          }
 
       - uses: actions/upload-artifact@v4
         with:
           name: ocr-runtime-win32-x64
-          path: resources/ocr-runtime/win32-x64/mmocr-svtr-worker.exe
+          path: |
+            resources/ocr-runtime/win32-x64/mmocr-svtr-worker.exe
+            resources/ocr-models/svtr-small_20e_st_mj-35d800d6.pth
           if-no-files-found: error
           retention-days: 14
